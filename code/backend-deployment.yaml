@@ -1,0 +1,66 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      initContainers:
+        - name: wait-for-mysql
+          image: busybox
+          command: ['sh', '-c', 'until nc -z mysql-service 3306; do echo waiting for mysql; sleep 2; done;']
+      containers:
+      - name: backend
+        image: localhost:5000/dev/backend
+        ports:
+        - containerPort: 3000
+        env:
+        - name: MYSQL_HOST
+          value: "mysql-service"
+        - name: MYSQL_USER
+          valueFrom:
+            secretKeyRef:
+              name: secrets
+              key: mysql-user
+        - name: MYSQL_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: secrets
+              key: mysql-password
+        - name: MYSQL_DATABASE
+          valueFrom:
+            secretKeyRef:
+              name: secrets
+              key: mysql-database
+        - name: JWT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: secrets
+              key: JWT_SECRET
+        - name: WEATHER_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: secrets
+              key: WEATHER_API_KEY
+        - name: HUGGING_FACE_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: secrets
+              key: HUGGING_FACE_API_KEY
+        readinessProbe:
+          tcpSocket:
+            port: 3000
+          initialDelaySeconds: 15
+          periodSeconds: 10
+        livenessProbe:
+          tcpSocket:
+            port: 3000
+          initialDelaySeconds: 15
+          periodSeconds: 10
