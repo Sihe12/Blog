@@ -1,4 +1,4 @@
-# Eialsi Full Stack Application Template
+# Full Stack Application Template
 
 Modern blog web application with Vue.js frontend, Node.js backend, and MySQL database. Supports both Docker and Kubernetes deployment.
 
